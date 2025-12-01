@@ -50,6 +50,10 @@ enum Commands {
         #[arg(short, long)]
         filter: Vec<String>,
 
+        /// Filter by account data size
+        #[arg(short, long)]
+        size: Option<u64>,
+
         /// Output JSON file (omit for stdout)
         #[arg(short, long)]
         output: Option<String>,
@@ -118,6 +122,7 @@ fn main() -> Result<()> {
             parser,
             data,
             filter,
+            size,
             output,
         } => {
             let rpc = RpcClient::new_with_timeout_and_commitment(
@@ -140,8 +145,15 @@ fn main() -> Result<()> {
             };
 
             // Parse filters
-            let rpc_filters: Result<Vec<_>> = filter.iter().map(|f| parse_filter(f)).collect();
-            let rpc_filters = rpc_filters?;
+            let mut rpc_filters: Vec<RpcFilterType> = filter
+                .iter()
+                .map(|f| parse_filter(f))
+                .collect::<Result<Vec<_>>>()?;
+
+            // Add size filter if provided
+            if let Some(size_val) = size {
+                rpc_filters.push(RpcFilterType::DataSize(size_val));
+            }
 
             let cfg = RpcProgramAccountsConfig {
                 account_config: RpcAccountInfoConfig {
