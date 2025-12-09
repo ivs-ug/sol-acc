@@ -178,7 +178,7 @@ fn main() -> Result<()> {
             let mut results = Vec::new();
             let mut processed = 0;
 
-            for (pubkey, acc) in accounts {
+            for (pubkey, acc) in &accounts {
                 let data_value = if let Some(ref dec) = decoder {
                     // Full decode if parser specified
                     let Some(data) = acc.data.decode() else {
@@ -222,7 +222,7 @@ fn main() -> Result<()> {
             });
 
             if let Some(file) = output {
-                std::fs::write(&file, serde_json::to_string_pretty(&output_json)?)?;
+                std::fs::write(&file, serde_json::to_string_pretty(&accounts)?)?;
                 eprintln!("Saved to {}", file);
             } else {
                 println!("{}", serde_json::to_string_pretty(&output_json)?);
